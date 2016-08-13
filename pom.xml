@@ -15,6 +15,11 @@
             <scope>compile</scope>
             <version>1.8.7</version>
         </dependency>
+        <dependency>
+            <groupId>com.esotericsoftware</groupId>
+            <artifactId>kryo</artifactId>
+            <version>4.0.0</version>
+        </dependency>
     </dependencies>
         <build>
             <plugins>
