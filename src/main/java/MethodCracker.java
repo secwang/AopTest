@@ -5,6 +5,7 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
 
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 
 
@@ -17,23 +18,37 @@ public class MethodCracker {
 
     @Around("execution(* *(..)) && @annotation(TX)")
     public Object around(ProceedingJoinPoint point) throws Throwable {
-        System.out.println(MethodSignature.class.cast(point.getSignature()).getMethod().getName());
-        System.out.println(point.getArgs());
-        System.out.println(MethodSignature.class.cast(point.getSignature()).getParameterTypes());
 
 
+        System.out.println("aop work");
+        TransactionManager.startTransaction();
 
         Object result = point.proceed();
-        Kryo kryo = new Kryo();
-//        Output output = new Output(new FileOutputStream("file.bin"));
-        Output output2 = new Output(new FileOutputStream("types.bin"));
-        Object[] vars = point.getArgs();
-        Class[] types =MethodSignature.class.cast(point.getSignature()).getParameterTypes();
-//        kryo.writeObject(output, vars);
-        kryo.writeClassAndObject(output2,types);
-//        output.close();
-        output2.close();
+
+        TransactionManager.endTransaction();
+
+
+        saveArgs(point);
+
+        saveParamsType(point);
+
         return result;
+    }
+
+    private void saveParamsType(ProceedingJoinPoint point) throws FileNotFoundException {
+        Kryo kryo = new Kryo();
+        Output output2 = new Output(new FileOutputStream("types.bin"));
+        Class[] types = MethodSignature.class.cast(point.getSignature()).getParameterTypes();
+        kryo.writeClassAndObject(output2, types);
+        output2.close();
+    }
+
+    private void saveArgs(ProceedingJoinPoint point) throws FileNotFoundException {
+        Kryo kryo = new Kryo();
+        Output output = new Output(new FileOutputStream("file.bin"));
+        Object[] vars = point.getArgs();
+        kryo.writeObject(output, vars);
+        output.close();
     }
 
 }
